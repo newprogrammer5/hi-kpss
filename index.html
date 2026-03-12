@@ -45,7 +45,7 @@
     </div>
     <div class="lw-body">
       <label class="lw-label" for="lwCodeInput">🔑 Lisans Kodunu Gir</label>
-      <input class="lw-input" id="lwCodeInput" type="text" placeholder="XXXX-XXXX-XXXX" maxlength="30" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+      <input class="lw-input" id="lwCodeInput" type="text" placeholder="Lisans anahtarı giriniz" maxlength="30" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
       <button class="lw-btn" id="lwBtn" onclick="checkLicense()">⚡ MACERAYA GİR</button>
       <div class="lw-error" id="lwError">❌ Geçersiz lisans kodu.</div>
       <div class="lw-success" id="lwSuccess">✅ Kod doğrulandı! Yükleniyor...</div>
@@ -273,6 +273,7 @@ async function validateCodeSupabase(code){
       <div class="nav-link"        id="nl-deneme"  onclick="gotoPage('deneme')">  <span class="nav-icon">⚔️</span>Deneme Sınavı</div>
       <div class="nav-link"        id="nl-streak"  onclick="gotoPage('streak')">  <span class="nav-icon">🔥</span>Günlük Takip</div>
       <div class="nav-link"        id="nl-puan"    onclick="gotoPage('puan')">    <span class="nav-icon">📊</span>Puan Hesapla</div>
+      <div class="nav-link"        id="nl-stats"   onclick="gotoPage('stats')">   <span class="nav-icon">📈</span>İstatistikler</div>
       <div class="nav-link"        id="nl-ayarlar" onclick="gotoPage('ayarlar')"><span class="nav-icon">⚙️</span>Ayarlar</div>
     </nav>
   </aside>
@@ -614,6 +615,34 @@ async function validateCodeSupabase(code){
       </div>
     </div>
 
+
+    <!-- İSTATİSTİKLER -->
+    <div id="page-stats" class="page">
+      <div class="page-top"><h1>📈 İSTATİSTİKLER</h1><p>Haftalık ve aylık performans</p></div>
+      <div class="stats-page">
+        <div class="stats-period-row">
+          <button class="period-btn active" id="pb-week" onclick="setPeriod('week')">📅 Bu Hafta</button>
+          <button class="period-btn" id="pb-month" onclick="setPeriod('month')">🗓 Bu Ay</button>
+          <button class="period-btn" id="pb-all" onclick="setPeriod('all')">📊 Tüm Süre</button>
+        </div>
+        <div class="stats-summary" id="statsSummary"></div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><h3 style="color:var(--accent)">📅 Çalışma Takvimi</h3></div>
+          <div class="card-body">
+            <div class="study-chart" id="studyChart"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><h3 style="color:var(--purple)">📋 Ders Bazlı İlerleme</h3></div>
+          <div class="card-body"><div id="dersProgress"></div></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><h3 style="color:var(--teal)">🎯 Test Performansı</h3></div>
+          <div class="card-body" id="testPerf"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- AYARLAR -->
     <div id="page-ayarlar" class="page">
       <div class="page-top"><h1>⚙️ AYARLAR</h1><p>Tercihlerini düzenle</p></div>
@@ -694,15 +723,19 @@ async function validateCodeSupabase(code){
 </div>
 
 <!-- MOBILE NAV -->
-<nav class="mob-nav">
+<nav class="mob-nav" id="mobNav">
+  <div class="mob-more" id="mobMore">
+    <button class="mob-more-btn" onclick="gotoPage('testler');closeMobMore()"><span>🎯</span> Test Takip</button>
+    <button class="mob-more-btn" onclick="gotoPage('deneme');closeMobMore()"><span>⚔️</span> Deneme Sınavı</button>
+    <button class="mob-more-btn" onclick="gotoPage('stats');closeMobMore()"><span>📈</span> İstatistikler</button>
+    <button class="mob-more-btn" onclick="gotoPage('ayarlar');closeMobMore()"><span>⚙️</span> Ayarlar</button>
+  </div>
   <div class="mob-nav-in">
     <button class="mob-btn active" id="mb-main"    onclick="gotoPage('main')">    <span class="mi">⚡</span>Panel</button>
     <button class="mob-btn"        id="mb-konular" onclick="gotoPage('konular')"> <span class="mi">📋</span>Konular</button>
-    <button class="mob-btn"        id="mb-testler" onclick="gotoPage('testler')"> <span class="mi">🎯</span>Testler</button>
-    <button class="mob-btn"        id="mb-deneme"  onclick="gotoPage('deneme')">  <span class="mi">⚔️</span>Deneme</button>
     <button class="mob-btn"        id="mb-streak"  onclick="gotoPage('streak')">  <span class="mi">🔥</span>Streak</button>
     <button class="mob-btn"        id="mb-puan"    onclick="gotoPage('puan')">    <span class="mi">📊</span>Puan</button>
-    <button class="mob-btn"        id="mb-ayarlar" onclick="gotoPage('ayarlar')"><span class="mi">⚙️</span>Ayarlar</button>
+    <button class="mob-btn"        id="mb-more"    onclick="toggleMobMore()">     <span class="mi">☰</span>Daha</button>
   </div>
 </nav>
 
@@ -1075,9 +1108,50 @@ body.light .lw-card{background:var(--bg-card);}
 .mob-btn.active{color:var(--accent);}
 .mob-btn .mi{font-size:18px;line-height:1;}
 
+
+/* MOB MORE MENU */
+.mob-nav{position:relative;}
+.mob-more{display:none;position:absolute;bottom:100%;left:0;right:0;background:rgba(13,13,20,.97);border-top:1px solid var(--border);padding:10px;flex-direction:column;gap:6px;backdrop-filter:blur(20px);}
+.mob-more.open{display:flex;}
+.mob-more-btn{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;text-align:left;}
+.mob-more-btn:hover{background:var(--bg3);}
+.mob-more-btn span{font-size:18px;}
+
+/* STATS PAGE */
+.stats-page{padding:20px 24px;}
+.stats-period-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.period-btn{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg-card2);color:var(--text2);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;}
+.period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.stats-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.stat-sum-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center;}
+.stat-sum-v{font-size:24px;font-weight:800;color:var(--text);}
+.stat-sum-l{font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;}
+.study-chart{display:flex;gap:4px;align-items:flex-end;height:90px;overflow-x:auto;padding-bottom:4px;}
+.chart-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:26px;}
+.chart-bar{width:18px;border-radius:4px 4px 0 0;transition:height .4s ease;min-height:3px;}
+.chart-bar-lbl{font-size:7px;color:var(--text3);white-space:nowrap;}
+
+/* LIGHT THEME FIXES */
+body.light .mob-more{background:rgba(248,250,255,.98);}
+body.light .mob-more-btn{background:var(--bg-card2);border-color:var(--border);color:var(--text);}
+body.light .stat-sum-card{background:var(--bg-card);}
+body.light .stat-sum-v{color:var(--text);}
+body.light .stat-sum-l{color:var(--text3);}
+/* Hakkında light theme fix */
+body.light #page-ayarlar .card-body{color:var(--text);}
+body.light #page-ayarlar .card-body span{color:var(--text);}
+body.light #page-ayarlar div[style*="color:rgba(255,255,255"]{color:var(--text2) !important;}
+body.light .ayar-title{color:var(--text) !important;}
+body.light .ayar-desc{color:var(--text2) !important;}
+body.light .xp-card .xp-lbl{color:var(--text3);}
+body.light .xp-card .xp-val{color:var(--text);}
+
 /* MEDIA QUERIES */
 @media(max-width:1100px){.panel-wrap{grid-template-columns:1fr;}.p-right{display:none;}}
 @media(max-width:768px){
+  .stats-summary{grid-template-columns:1fr 1fr;}
+  .stats-page{padding:12px 12px 90px !important;}
+
   .sidebar{transform:translateX(-100%);}.main{margin-left:0;max-width:100vw;}.mob-nav{display:block;}
   .page-top{padding:16px 16px 12px;}
   .panel-wrap,.konu-page,.test-page,.deneme-page,.streak-page,.puan-page{padding:12px 12px 90px;}
@@ -1192,8 +1266,8 @@ const STAT_MAP={
   'AYT Yabancı Dil':{cls:'int',lbl:'AYT Dil',c:'var(--int)'}
 };
 
-// XP: ilk 25 level 75 XP, sonrası 150 XP
-function xpForLevel(lvl){return lvl<=25?75:150;}
+// XP: ilk 10 level 25 XP, 11-25 arası 75 XP, 25+ 150 XP
+function xpForLevel(lvl){return lvl<=10?25:lvl<=25?75:150;}
 function calcLevel(xp){let lvl=1,rem=xp;while(rem>=xpForLevel(lvl)){rem-=xpForLevel(lvl);lvl++;}return{lvl,rem,need:xpForLevel(lvl)};}
 
 const BADGES=[
@@ -1389,7 +1463,7 @@ function updateXP(){
   document.getElementById('xpLvl').textContent=lvl;
   document.getElementById('xpNum').textContent=xp;
   document.getElementById('xpFill').style.width=pct+'%';
-  const nextEl=document.getElementById('xpNextLabel');if(nextEl)nextEl.textContent='Sonraki level: '+(need-rem)+' XP kaldı';
+  const nextEl=document.getElementById('xpNextLabel');if(nextEl)nextEl.textContent='Sonraki level: '+(need-rem)+' XP kaldı | '+need+' XP/level';
   const sp=document.getElementById('streakPill');if(sp)sp.textContent=calcStreak(S);
 }
 function renderStats(){
@@ -1691,7 +1765,7 @@ function saveAyarlar(){
 }
 function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sinav_rpg_yedek_${dk(new Date())}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('💾 Kaydedildi!','save');}
 function importData(e){const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);S={...S,...d};save();toast('📂 İçe aktarıldı!','save');initApp();}catch(err){alert('Dosya okunamadı!');}};r.readAsText(f);e.target.value='';}
-function resetApp(){if(!confirm('Tüm veriler silinecek. Emin misin?'))return;localStorage.removeItem('kpss_rpg4');localStorage.removeItem('kpss_license_ok_v1');localStorage.removeItem('kpss_license_code_v1');location.reload();}
+function resetApp(){if(!confirm('Tüm veriler silinecek. Emin misin?'))return;localStorage.removeItem('kpss_rpg4');location.reload();}
 function gotoPage(id){
   document.querySelectorAll('.main .page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -1699,7 +1773,7 @@ function gotoPage(id){
   const nl=document.getElementById('nl-'+id);if(nl)nl.classList.add('active');
   document.querySelectorAll('.mob-btn').forEach(b=>b.classList.remove('active'));
   const mb=document.getElementById('mb-'+id);if(mb)mb.classList.add('active');
-  if(id==='ayarlar')openAyarlar();window.scrollTo(0,0);
+  if(id==='ayarlar')openAyarlar();if(id==='stats')renderStatsPage();window.scrollTo(0,0);
 }
 function toast(msg,type='xp'){const w=document.getElementById('toastWrap');const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;w.appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400);},2800);}
 function initAvatarUpload(){
@@ -1715,6 +1789,83 @@ function initAvatarUpload(){
   });
   ['tTop','tDog','tYan','tBos'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateTestPreview);});
 }
+
+// MOBILE MORE MENU
+function toggleMobMore(){const m=document.getElementById('mobMore');if(m)m.classList.toggle('open');}
+function closeMobMore(){const m=document.getElementById('mobMore');if(m)m.classList.remove('open');}
+document.addEventListener('click',function(e){const m=document.getElementById('mobMore');if(m&&m.classList.contains('open')&&!e.target.closest('#mobNav'))m.classList.remove('open');});
+
+// ISTATISTIKLER
+let _statPeriod='week';
+function setPeriod(p){
+  _statPeriod=p;
+  ['week','month','all'].forEach(x=>{const el=document.getElementById('pb-'+x);if(el)el.classList.toggle('active',x===p);});
+  renderStatsPage();
+}
+function getDateRange(period){
+  const today=getToday();
+  if(period==='week'){const start=new Date(today);start.setDate(today.getDate()-6);return{start,end:today};}
+  if(period==='month'){const start=new Date(today.getFullYear(),today.getMonth(),1);return{start,end:today};}
+  const allKeys=[...Object.keys(S.CAL),...S.T.map(t=>t.date),...S.B.map(b=>b.date)].filter(Boolean).sort();
+  const start=allKeys.length?new Date(allKeys[0]):new Date(today.getFullYear(),today.getMonth(),1);
+  return{start,end:today};
+}
+function getDaysInRange(start,end){
+  const days=[];let d=new Date(start);d.setHours(0,0,0,0);
+  const e2=new Date(end);e2.setHours(23,59,59,999);
+  while(d<=e2){days.push(dk(d));d=new Date(d);d.setDate(d.getDate()+1);}
+  return days;
+}
+function renderStatsPage(){
+  const{start,end}=getDateRange(_statPeriod);
+  const days=getDaysInRange(start,end);
+  const startStr=dk(start),endStr=dk(end);
+  const studiedDays=days.filter(d=>S.CAL[d]==='studied').length;
+  const missedDays=days.filter(d=>S.CAL[d]==='missed').length;
+  const testsInPeriod=S.T.filter(t=>t.date&&t.date>=startStr&&t.date<=endStr).length;
+  const konularInPeriod=Object.values(S.K).filter(v=>v&&typeof v==='string'&&v>=startStr&&v<=endStr).length;
+  const xpInPeriod=konularInPeriod*10+testsInPeriod*5+studiedDays*5;
+  const sumEl=document.getElementById('statsSummary');
+  if(sumEl)sumEl.innerHTML=
+    '<div class="stat-sum-card"><div class="stat-sum-v" style="color:var(--green)">'+studiedDays+'</div><div class="stat-sum-l">Çalışma Günü</div></div>'+
+    '<div class="stat-sum-card"><div class="stat-sum-v" style="color:var(--red)">'+missedDays+'</div><div class="stat-sum-l">Kaçırılan Gün</div></div>'+
+    '<div class="stat-sum-card"><div class="stat-sum-v" style="color:var(--accent)">'+konularInPeriod+'</div><div class="stat-sum-l">Konu Tamamlandı</div></div>'+
+    '<div class="stat-sum-card"><div class="stat-sum-v" style="color:var(--gold)">'+xpInPeriod+'</div><div class="stat-sum-l">XP Kazanıldı</div></div>';
+  const chartDays=days.slice(-30);
+  const chartEl=document.getElementById('studyChart');
+  if(chartEl){chartEl.innerHTML=chartDays.map(d=>{
+    const st=S.CAL[d]||'none';
+    const color=st==='studied'?'var(--green)':st==='missed'?'var(--red)':st==='rest'?'var(--gold)':'var(--bg4)';
+    const h=st==='studied'?70:st==='missed'?25:st==='rest'?40:8;
+    const parts=d.split('-');
+    return'<div class="chart-bar-wrap"><div class="chart-bar" style="height:'+h+'px;background:'+color+'"></div><div class="chart-bar-lbl">'+parts[2]+'/'+parts[1]+'</div></div>';
+  }).join('');}
+  const dersEl=document.getElementById('dersProgress');
+  if(dersEl){
+    const dersler=Object.keys(getKonularForSinav());
+    if(!dersler.length){dersEl.innerHTML='<div style="color:var(--text3);font-size:12px;padding:12px;text-align:center">Konu verisi yok</div>';return;}
+    dersEl.innerHTML='<div style="display:flex;flex-direction:column;gap:12px">'+dersler.map(d=>{
+      const{total,done}=dersStats(d);const pct=total?Math.round(done/total*100):0;
+      const cfg=STAT_MAP[d]||{c:'var(--lck)',lbl:d};
+      return'<div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--text)">'+d+'</span><span style="font-size:11px;color:var(--text3)">'+done+'/'+total+' • %'+pct+'</span></div><div style="height:7px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cfg.c+';border-radius:4px;transition:width .6s ease"></div></div></div>';
+    }).join('')+'</div>';
+  }
+  const testEl=document.getElementById('testPerf');
+  if(testEl){
+    const filtered=S.T.filter(t=>!t.date||(t.date>=startStr&&t.date<=endStr));
+    if(!filtered.length){testEl.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px">Bu dönemde test eklenmedi</div>';return;}
+    const avgPct=filtered.reduce((a,t)=>a+(t.top?t.dog/t.top*100:0),0)/filtered.length;
+    const best=filtered.reduce((a,t)=>Math.max(a,t.top?t.dog/t.top*100:0),0);
+    const avgNet=filtered.reduce((a,t)=>a+(t.net||0),0)/filtered.length;
+    testEl.innerHTML=
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">'+
+      '<div style="text-align:center;padding:12px;background:var(--bg-card2);border-radius:10px"><div style="font-size:20px;font-weight:800;color:var(--accent)">'+filtered.length+'</div><div style="font-size:10px;color:var(--text3)">Test Sayısı</div></div>'+
+      '<div style="text-align:center;padding:12px;background:var(--bg-card2);border-radius:10px"><div style="font-size:20px;font-weight:800;color:var(--green)">%'+avgPct.toFixed(1)+'</div><div style="font-size:10px;color:var(--text3)">Ort. Başarı</div></div>'+
+      '<div style="text-align:center;padding:12px;background:var(--bg-card2);border-radius:10px"><div style="font-size:20px;font-weight:800;color:var(--gold)">'+avgNet.toFixed(1)+'</div><div style="font-size:10px;color:var(--text3)">Ort. Net</div></div></div>'+
+      '<div style="font-size:11px;color:var(--text3);padding:8px 12px;background:var(--bg-card2);border-radius:8px">🏆 En yüksek başarı: <strong style="color:var(--green)">%'+best.toFixed(1)+'</strong></div>';
+  }
+}
+
 document.addEventListener('DOMContentLoaded',function(){
   load();
   if(S.ready){initApp();}
